@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[134]:
 
 
 import random
@@ -10,23 +10,20 @@ import sys
 import csv
 import functools
 import operator
-Time = 1000
-MaxNum = 10
+from scipy.stats import expon
+from pprint import pprint
+Time = 300
+MaxNum = 100
 Floor = 7
 Filename = None
 
 
-# In[6]:
+# In[135]:
 
 
 print('Usage: python DataGen.py Time MaxPeople Floor [OutputFile]')
 if 'y' in input('Default?(n/y)'):
     Filename = 'testoutput.csv'
-    print(f'Time:{Time}')
-    print(f'MaxPeople:{MaxNum}')
-    print(f'Floor:{Floor}')
-    print(f'Filename: {Filename}')
-    pass
 elif len(sys.argv) == 1:
     Time = int(input('Time?'))
     MaxNum = int(input('MaxPeople?'))
@@ -39,75 +36,112 @@ elif len(sys.argv) >= 4:
         Filename = sys.argv[4]
     except:
         pass
+elif sys.argv[1] == '-f':
+    pass
 else:
     # If conert to .py
     print('Invalid Arguments')
     exit(0)
-Prob = 1-1/Time
+Lambda = MaxNum/Time
+print(f'Time:{Time}')
+print(f'MaxPeople:{MaxNum}')
+print(f'Floor:{Floor}')
+print(f'Filename: {Filename}')
+print(f'Frequency:{Lambda}')
 
 
-# In[7]:
+# In[136]:
 
+
+def getThreshold(interval, lbda=Lambda):
+    # The probability that no people appear before interval
+    return expon.pdf(interval*lbda)
 
 def getTProb(args):
-    return calcTProb(args)
+    return random.random()
+
+# Not exactly probability, maybe some negative. But we only choose the maximum one, so forgive me plz.
 def getAProb(args):
     aprobs = []
     for f in range(Floor):
-        aprobs.append(calcAProb(args))
+        p = random.random() - getThreshold(args['Asinterval'][f])
+        aprobs.append(p)
     return aprobs
+
 def getDProb(args):
     dprobs = []
     a = args['a']
     for f in range(Floor):
-        dprobs.append(calcDProb(args))
-    dprobs[a-1] = 0
+        dprobs.append(random.random() - getThreshold(args['Dsinterval'][f]))
+    # make sure the probability of same floor is minimum
+    dprobs[a] = min(dprobs)-1
     return dprobs
 
 
-# In[8]:
+# In[137]:
 
 
-def calcTProb(args):
-    return random.random()
-def calcAProb(args):
-    return random.random()
-def calcDProb(args):
-    return random.random()
+def getA(args):
+    aprobs = getAProb(args)
+    a = aprobs.index(max(aprobs))
+    args['Asinterval'][a] = 0
+    args['a'] = a
+    return a+1
+def getD(args):
+    dprobs = getDProb(args)
+    d = dprobs.index(max(dprobs))
+    args['Dsinterval'][d] = 0
+    return d+1
 
 
-# In[15]:
+# In[147]:
 
 
 A = []
 D = []
 T = []
 nowNum = 0
-t = 1
+t = 0
 interval = 0
-args = {'time':t, 'interval':interval}
+args = {'time':t, 
+        'Tsinterval':interval, 
+        'Asinterval':[0 for _ in range(Floor)],
+        'Dsinterval':[0 for _ in range(Floor)],
+       'SumOfTInterval':0}
+adTable = [[0 for j in range(Floor+1)] for i in range(Floor+1)]
+adTable[0] = [i for i in range(Floor+1)]
+for i in range(Floor+1):
+    adTable[i][0] = i
+tprob = getTProb(args)
 while nowNum < MaxNum :
-    havePeople = getTProb(args) > Prob
+    havePeople =  tprob > getThreshold(args['Tsinterval'])
     if havePeople:
         nowNum += 1
-        args['time'] = t
-        args['interval'] = interval 
-        T.append(t)
-        aprobs = getAProb(args)
-        a = aprobs.index(max(aprobs))+1
+        tprob = getTProb(args)
+        args['SumOfTInterval'] += args['Tsinterval']
+        args['Tsinterval'] = 0 
+        T.append(args['time'])
+        a = getA(args)
         A.append(a)
-        args['a'] = a
-        dprobs = getDProb(args)
-        d = dprobs.index(max(dprobs))+1
+        d = getD(args)
         D.append(d)
-        interval = 0
-    interval += 1
-    t += 1
-if t > Time:
-    print(f'Warning! Exceed expected time with t={t}')
+        adTable[a][d] += 1
+    for f in range(Floor):
+        args['Asinterval'][f] += 1
+    for f in range(Floor):
+        args['Dsinterval'][f] += 1
+    args['Tsinterval'] += 1
+    args['time'] = args['time'] + 1
+if args['time'] > Time:
+    print(f'Warning! Exceed expected time {Time} with t={args["time"]}')
+print(f'The Last passenger arrived time: {args["time"]}')
+print(f'Average arrived Interval: {args["SumOfTInterval"]/MaxNum}')
+# adTable[a][d] means # of passengers from a to d
+print('From a to d scatter table:')
+pprint(adTable)
 
 
-# In[107]:
+# In[122]:
 
 
 if Filename != None:
