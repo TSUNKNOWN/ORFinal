@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[134]:
+# In[7]:
 
 
 import random
@@ -18,7 +18,7 @@ Floor = 7
 Filename = None
 
 
-# In[135]:
+# In[8]:
 
 
 print('Usage: python DataGen.py Time MaxPeople Floor [OutputFile]')
@@ -50,7 +50,7 @@ print(f'Filename: {Filename}')
 print(f'Frequency:{Lambda}')
 
 
-# In[136]:
+# In[9]:
 
 
 def getThreshold(interval, lbda=Lambda):
@@ -78,7 +78,7 @@ def getDProb(args):
     return dprobs
 
 
-# In[137]:
+# In[10]:
 
 
 def getA(args):
@@ -94,7 +94,7 @@ def getD(args):
     return d+1
 
 
-# In[147]:
+# In[11]:
 
 
 A = []
@@ -141,14 +141,14 @@ print('From a to d scatter table:')
 pprint(adTable)
 
 
-# In[122]:
+# In[12]:
 
 
 if Filename != None:
     with open(Filename, 'w') as f:
         print(f'Write to {Filename}')
         writer = csv.writer(f)
-        index = ['',]
+        index = []
         for i in range(1, MaxNum+1):
             index.append(str(i))
         writer.writerow(index)
@@ -160,10 +160,4 @@ else:
     print(','.join(str(t) for t in T))
     print(','.join(str(a) for a in A))
     print(','.join(str(d) for d in D))
-
-
-# In[ ]:
-
-
-
 
