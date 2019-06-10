@@ -3,7 +3,6 @@
 
 # In[7]:
 
-
 import random
 import numpy as np
 import sys
@@ -12,28 +11,31 @@ import functools
 import operator
 from scipy.stats import expon
 from pprint import pprint
+
 Time = 300
-MaxNum = 100
+PgrCnt = 100
 Floor = 7
+Speed = 10
 Filename = None
 
 
 # In[8]:
-
 
 print('Usage: python DataGen.py Time MaxPeople Floor [OutputFile]')
 if 'y' in input('Default?(n/y)'):
     Filename = 'testoutput.csv'
 elif len(sys.argv) == 1:
     Time = int(input('Time?'))
-    MaxNum = int(input('MaxPeople?'))
+    PgrCnt = int(input('Number of Passenger?'))
     Floor = int(input('Floor?'))
-elif len(sys.argv) >= 4:
-    Duration = int(sys.argv[1])
-    MaxNum = int(sys.argv[2])
+    Speed = int(input('Speed?'))
+elif len(sys.argv) >= 5:
+    Time = int(sys.argv[1])
+    PgrCnt = int(sys.argv[2])
     Floor = int(sys.argv[3])
+    Speed = int(sys.argv[4])
     try:
-        Filename = sys.argv[4]
+        Filename = sys.argv[5]
     except:
         pass
 elif sys.argv[1] == '-f':
@@ -42,10 +44,13 @@ else:
     # If conert to .py
     print('Invalid Arguments')
     exit(0)
-Lambda = MaxNum/Time
+
+Lambda = PgrCnt / Time
+
 print(f'Time:{Time}')
-print(f'MaxPeople:{MaxNum}')
-print(f'Floor:{Floor}')
+print(f'N:{PgrCnt}')
+print(f'H:{Floor}')
+print(f'X:{Speed}')
 print(f'Filename: {Filename}')
 print(f'Frequency:{Lambda}')
 
@@ -112,8 +117,10 @@ adTable = [[0 for j in range(Floor+1)] for i in range(Floor+1)]
 adTable[0] = [i for i in range(Floor+1)]
 for i in range(Floor+1):
     adTable[i][0] = i
+
 tprob = getTProb(args)
-while nowNum < MaxNum :
+
+while nowNum < PgrCnt :
     havePeople =  tprob > getThreshold(args['Tsinterval'])
     if havePeople:
         nowNum += 1
@@ -132,10 +139,12 @@ while nowNum < MaxNum :
         args['Dsinterval'][f] += 1
     args['Tsinterval'] += 1
     args['time'] = args['time'] + 1
+
 if args['time'] > Time:
     print(f'Warning! Exceed expected time {Time} with t={args["time"]}')
+
 print(f'The Last passenger arrived time: {args["time"]}')
-print(f'Average arrived Interval: {args["SumOfTInterval"]/MaxNum}')
+print(f'Average arrived Interval: {args["SumOfTInterval"]/PgrCnt}')
 # adTable[a][d] means # of passengers from a to d
 print('From a to d scatter table:')
 pprint(adTable)
@@ -149,15 +158,74 @@ if Filename != None:
         print(f'Write to {Filename}')
         writer = csv.writer(f)
         index = []
-        for i in range(1, MaxNum+1):
+        for i in range(1, PgrCnt+1):
             index.append(str(i))
         writer.writerow(index)
         writer.writerow(T)
         writer.writerow(A)
         writer.writerow(D)
 else:
-    print(','.join(str(i) for i in range(1, MaxNum+1)))
+    print(','.join(str(i) for i in range(1, PgrCnt+1)))
     print(','.join(str(t) for t in T))
     print(','.join(str(a) for a in A))
     print(','.join(str(d) for d in D))
 
+
+#====================================================================
+# .csv -> .dat
+
+# ID      1     2     3    
+#
+# Arrive  1669  6009  8488
+#
+# Start.  2     3     4
+#
+# End.    5     1     6
+
+
+with open(Filename) as file:
+    csv_reader = csv.reader(file, delimiter=',')
+    
+    data = []
+
+    for row in csv_reader:
+        data.append(row)
+
+    LOWEST_FLOOR = 1
+    HIGHEST_FLOOR = Floor
+
+    random.seed()
+    CURRENT_FLOOR = random.randint(LOWEST_FLOOR, HIGHEST_FLOOR)
+
+    file = open("fp.dat","w+")
+
+    file.write("param N := %d;\n" % PgrCnt)
+    file.write("param L := %d;\n" % LOWEST_FLOOR)
+    file.write("param H := %d;\n" % HIGHEST_FLOOR)
+    file.write("param F := %d;\n" % CURRENT_FLOOR)
+    file.write("param X := %d;\n\n" % Speed)
+
+    file.write("param T :=\n")
+    for i in range(PgrCnt):
+        if i != (PgrCnt-1):
+            file.write('    %d  %d\n' %((i+1),int(data[2][i])))
+        else:
+            file.write('    %d  %d;\n\n' %((i+1),int(data[2][i])))
+
+
+    file.write("param A :=\n")
+    for i in range(PgrCnt):
+        if i != (PgrCnt-1):
+            file.write('    %d  %d\n' %((i+1),int(data[4][i])))
+        else:
+            file.write('    %d  %d;\n\n' %((i+1),int(data[4][i])))
+
+
+    file.write("param D :=\n")
+    for i in range(PgrCnt):
+        if i != (PgrCnt-1):
+            file.write('    %d  %d\n' %((i+1),int(data[6][i])))
+        else:
+            file.write('    %d  %d;\n' %((i+1),int(data[6][i])))
+
+    print('Parse to fp.dat')
