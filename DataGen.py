@@ -13,9 +13,9 @@ from scipy.stats import expon
 from pprint import pprint
 
 Time = 300
-PgrCnt = 100
-Floor = 7
-Speed = 10
+PgrCnt = 10
+Floor = 10
+Speed = 5
 Filename = None
 
 
