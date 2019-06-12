@@ -21,7 +21,7 @@ Filename = None
 
 # In[8]:
 
-print('Usage: python DataGen.py Time MaxPeople Floor [OutputFile]')
+print('Usage: python DataGen.py Time MaxPeople Floor Speed [OutputFile]')
 if 'y' in input('Default?(n/y)'):
     Filename = 'testoutput.csv'
 elif len(sys.argv) == 1:
@@ -153,9 +153,9 @@ pprint(adTable)
 # In[12]:
 
 
-if Filename != None:
-    with open(Filename, 'w') as f:
-        print(f'Write to {Filename}')
+if Filename != None: 
+    with open(Filename+'.csv', 'w') as f:
+        print(f'Write to {Filename}.csv')
         writer = csv.writer(f)
         index = []
         for i in range(1, PgrCnt+1):
@@ -183,7 +183,7 @@ else:
 # End.    5     1     6
 
 
-with open(Filename) as file:
+with open(Filename+'.csv', 'r') as file:
     csv_reader = csv.reader(file, delimiter=',')
     
     data = []
@@ -197,7 +197,7 @@ with open(Filename) as file:
     random.seed()
     CURRENT_FLOOR = random.randint(LOWEST_FLOOR, HIGHEST_FLOOR)
 
-    file = open("fp.dat","w+")
+    file = open(f"{Filename}.dat","w+")
 
     file.write("param N := %d;\n" % PgrCnt)
     file.write("param L := %d;\n" % LOWEST_FLOOR)
@@ -208,24 +208,24 @@ with open(Filename) as file:
     file.write("param T :=\n")
     for i in range(PgrCnt):
         if i != (PgrCnt-1):
-            file.write('    %d  %d\n' %((i+1),int(data[2][i])))
+            file.write('    %d  %d\n' %((i+1),int(data[1][i])))
         else:
-            file.write('    %d  %d;\n\n' %((i+1),int(data[2][i])))
+            file.write('    %d  %d;\n\n' %((i+1),int(data[1][i])))
 
 
     file.write("param A :=\n")
     for i in range(PgrCnt):
         if i != (PgrCnt-1):
-            file.write('    %d  %d\n' %((i+1),int(data[4][i])))
+            file.write('    %d  %d\n' %((i+1),int(data[2][i])))
         else:
-            file.write('    %d  %d;\n\n' %((i+1),int(data[4][i])))
+            file.write('    %d  %d;\n\n' %((i+1),int(data[2][i])))
 
 
     file.write("param D :=\n")
     for i in range(PgrCnt):
         if i != (PgrCnt-1):
-            file.write('    %d  %d\n' %((i+1),int(data[6][i])))
+            file.write('    %d  %d\n' %((i+1),int(data[3][i])))
         else:
-            file.write('    %d  %d;\n' %((i+1),int(data[6][i])))
+            file.write('    %d  %d;\n' %((i+1),int(data[3][i])))
 
-    print('Parse to fp.dat')
+    print(f'Parse to {Filename}.dat')
