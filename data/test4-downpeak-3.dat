@@ -1,0 +1,26 @@
+param N := 5;
+param L := 1;
+param H := 10;
+param F := 5;
+param X := 5;
+
+param T :=
+    1  4
+    2  30
+    3  34
+    4  48
+    5  53;
+
+param A :=
+    1  10
+    2  9
+    3  4
+    4  5
+    5  2;
+
+param D :=
+    1  1
+    2  1
+    3  1
+    4  1
+    5  1;
